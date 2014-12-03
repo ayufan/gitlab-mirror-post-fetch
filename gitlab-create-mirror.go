@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"crypto/tls"
 	"github.com/dustin/httputil"
 )
 
@@ -295,6 +296,15 @@ func doPush() {
 
 func main() {
 	flag.Parse()
+
+	cfg := &tls.Config{
+		MaxVersion:               tls.VersionTLS11, // try tls.VersionTLS10 if this doesn't work
+		PreferServerCipherSuites: true,
+	}
+
+	http.DefaultClient.Transport = &http.Transport{
+		TLSClientConfig: cfg,
+	}
 
 	if *address == "" {
 		log.Fatalf("Address is required!")
