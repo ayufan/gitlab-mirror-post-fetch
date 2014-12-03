@@ -5,7 +5,7 @@ Post fetch app compatible with https://github.com/dustin/gitmirror
 
 ## Installation
 
-go get github.com/ayufan/gitlab-mirror-post-fetch
+```go get github.com/ayufan/gitlab-mirror-post-fetch```
 
 ## The Use
 
