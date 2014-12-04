@@ -194,6 +194,11 @@ func readOriginRemote() url.URL {
 	}
 
 	rawurl := strings.TrimSpace(string(out))
+	if !strings.Contains(rawurl, "://") {
+		rawurl = strings.Replace(rawurl, ":", "/", 1)
+		rawurl = "ssh://" + rawurl
+	}
+
 	result, err := url.Parse(rawurl)
 	if err != nil {
 		log.Fatalf("Invalid URL for %v: %s", *origin_remote, out)
