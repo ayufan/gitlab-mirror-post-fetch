@@ -10,22 +10,22 @@ import (
 	"os"
 	"os/exec"
 	"io"
-	"bufio"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 	"github.com/dustin/httputil"
 )
 
 var (
-	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL or set GITLAB_URL env")
+	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL [GITLAB_URL]")
 	api_path         = flag.String("gitlab-api-path", "/api/v3", "GitLab API path")
-	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group or set GITLAB_GROUP env")
-	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token or set GITLAB_PRIVATE_TOKEN env")
-	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public or set GITLAB_VISIBILITIY_LEVEL env")
+	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group [GITLAB_GROUP]")
+	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token [GITLAB_PRIVATE_TOKEN[")
+	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public [GITLAB_VISIBILITIY_LEVEL]")
 	git              = flag.String("git", "/usr/bin/git", "path to git")
-	src_remote       = flag.String("src-remote", "origin", "Source remote name")
+	origin_remote    = flag.String("origin-remote", "origin", "Source remote name")
 	gitlab_remote    = flag.String("gitlab-remote", "gitlab", "Git remote name")
 )
 
@@ -187,51 +187,34 @@ func createProject(new_project CreateProject) Project {
 	return created_project
 }
 
-func readRepoNameAndUrl() (string, string) {
-	if *custom_repo != "" && *custom_remote != "" {
-		return *custom_repo, *custom_remote
-	}
-
-	log.Printf("Reading repository name and url from stdin...")
-	reader := bufio.NewReader(os.Stdin)
-	payload, err := readPayload(reader)
+func readOriginRemote() url.URL {
+	out, err := exec.Command(*git, "config", fmt.Sprintf("remote.%v.url", *origin_remote)).Output()
 	if err != nil {
-		log.Fatalf("Error reading payload data: %v", err)
+		log.Fatalf("No URL defined for %v.", *origin_remote)
 	}
 
-	p := struct {
-			Repository struct {
-				Private  bool
-				Name     string
-				FullName string `json:"full_name"`
-				GitUrl   string `json:"git_url"`
-				SshUrl   string `json:"ssh_url"`
-			}
-		}{}
-
-	err = json.Unmarshal(payload, &p)
+	rawurl := strings.TrimSpace(string(out))
+	result, err := url.Parse(rawurl)
 	if err != nil {
-		log.Fatalf("Error unmarshalling payload data: %v", err)
+		log.Fatalf("Invalid URL for %v: %s", *origin_remote, out)
 	}
 
-	if p.Repository.Private {
-		return p.Repository.FullName, p.Repository.SshUrl
-	} else {
-		return p.Repository.FullName, p.Repository.GitUrl
-	}
+	result.User = nil
+	result.RawQuery = ""
+	result.Fragment = ""
+	return *result
 }
 
-func doCreate(repo_flatten_name string, repo_url string) *Project {
+func doCreate(repo_name string, repo_url string) *Project {
 	log.Printf("Looking for group %v...", *group)
 	group_data := findGroup(*group)
 	if group_data == nil {
 		log.Fatalf("No group %v found.", *group)
 	}
 
-	log.Printf("Creating project %v in %v...", repo_flatten_name, *group)
-	new_project := CreateProject {
-	}
-	new_project.Name = repo_flatten_name
+	log.Printf("Creating project %v in %v...", repo_name, *group)
+	new_project := CreateProject {}
+	new_project.Name = repo_name
 	new_project.Description = fmt.Sprintf("Mirror of %v", repo_url)
 	new_project.IssuesEnabled = false
 	new_project.MergeRequestsEnabled = false
@@ -262,13 +245,16 @@ func doCheckRemote() bool {
 }
 
 func doCreateRemote() {
-	repo_name, repo_url := readRepoNameAndUrl()
-	repo_flatten_name := strings.Replace(repo_name, "/", "-", -1)
+	repo_url := readOriginRemote()
+	repo_name := repo_url.Path
+	repo_name = strings.TrimPrefix(repo_name, "/")
+	repo_name = strings.TrimSuffix(repo_name, ".git")
+	repo_name = strings.Replace(repo_name, "/", "-", -1)
 
-	log.Printf("Looking for project %v in %v...", repo_flatten_name, *group)
-	project_data := findProject(*group, repo_flatten_name)
+	log.Printf("Looking for project %v in %v...", repo_name, *group)
+	project_data := findProject(*group, repo_name)
 	if project_data == nil {
-		project_data = doCreate(repo_flatten_name, repo_url)
+		project_data = doCreate(repo_name, repo_url.String())
 	}
 
 	log.Printf("Adding remote %v as %v...", project_data.SshRepoUrl, *gitlab_remote)
