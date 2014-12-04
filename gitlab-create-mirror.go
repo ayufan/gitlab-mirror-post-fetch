@@ -22,7 +22,7 @@ var (
 	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL [GITLAB_URL]")
 	api_path         = flag.String("gitlab-api-path", "/api/v3", "GitLab API path")
 	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group [GITLAB_GROUP]")
-	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token [GITLAB_PRIVATE_TOKEN[")
+	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token [GITLAB_PRIVATE_TOKEN]")
 	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public [GITLAB_VISIBILITIY_LEVEL]")
 	git              = flag.String("git", "/usr/bin/git", "path to git")
 	origin_remote    = flag.String("origin-remote", "origin", "Source remote name")
