@@ -20,15 +20,14 @@ import (
 )
 
 var (
-	address          = flag.String("url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL or set GITLAB_URL env")
-	api_path         = flag.String("api-path", "/api/v3", "GitLab API path")
-	group            = flag.String("group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group or set GITLAB_GROUP env")
-	private_token    = flag.String("private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token or set GITLAB_PRIVATE_TOKEN env")
-	visibility_level = flag.String("visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public or set GITLAB_VISIBILITIY_LEVEL env")
+	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL or set GITLAB_URL env")
+	api_path         = flag.String("gitlab-api-path", "/api/v3", "GitLab API path")
+	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group or set GITLAB_GROUP env")
+	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token or set GITLAB_PRIVATE_TOKEN env")
+	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public or set GITLAB_VISIBILITIY_LEVEL env")
 	git              = flag.String("git", "/usr/bin/git", "path to git")
-	git_remote       = flag.String("remote", "gitlab", "Git remote name")
-	custom_repo      = flag.String("custom-repo", "", "Specify custom repository name")
-	custom_remote    = flag.String("custom-remote", "", "Specify custom repository address")
+	src_remote       = flag.String("src-remote", "origin", "Source remote name")
+	gitlab_remote    = flag.String("gitlab-remote", "gitlab", "Git remote name")
 )
 
 const (
@@ -255,8 +254,8 @@ func doCreate(repo_flatten_name string, repo_url string) *Project {
 }
 
 func doCheckRemote() bool {
-	log.Printf("Verifying existence of git remote %v...", *git_remote)
-	err := exec.Command(*git, "config", fmt.Sprintf("remote.%v.url", *git_remote)).Run()
+	log.Printf("Verifying existence of git remote %v...", *gitlab_remote)
+	err := exec.Command(*git, "config", fmt.Sprintf("remote.%v.url", *gitlab_remote)).Run()
 	if err != nil {
 		return false
 	}
@@ -273,10 +272,10 @@ func doCreateRemote() {
 		project_data = doCreate(repo_flatten_name, repo_url)
 	}
 
-	log.Printf("Adding remote %v as %v...", project_data.SshRepoUrl, *git_remote)
-	err := exec.Command(*git, "remote", "add", "--mirror=push", *git_remote, project_data.SshRepoUrl).Run()
+	log.Printf("Adding remote %v as %v...", project_data.SshRepoUrl, *gitlab_remote)
+	err := exec.Command(*git, "remote", "add", "--mirror=push", *gitlab_remote, project_data.SshRepoUrl).Run()
 	if err != nil {
-		log.Fatalf("Failed to add git remote %v to %v", *git_remote, project_data.SshRepoUrl)
+		log.Fatalf("Failed to add git remote %v to %v", *gitlab_remote, project_data.SshRepoUrl)
 	}
 
 	log.Printf("We are waiting 3 seconds to settle down...")
@@ -284,13 +283,13 @@ func doCreateRemote() {
 }
 
 func doPush() {
-	log.Printf("Pushing changes to %v...", *git_remote)
-	cmd := exec.Command(*git, "push", *git_remote)
+	log.Printf("Pushing changes to %v...", *gitlab_remote)
+	cmd := exec.Command(*git, "push", *gitlab_remote)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		log.Fatalf("Failed to push data to %v", *git_remote)
+		log.Fatalf("Failed to push data to %v", *gitlab_remote)
 	}
 }
 
