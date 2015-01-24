@@ -35,3 +35,4 @@ Kamil Trzciński, Polidea, 2014
 ## License
 
 MIT
+
