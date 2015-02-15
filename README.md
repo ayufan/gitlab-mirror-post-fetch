@@ -28,6 +28,10 @@ exec gitlab-mirror-post-fetch
 1. Give `bin/post-fetch` executable permissions: `chmod +x bin/post-fetch`
 1. Configure `gitmirror` script as described. Giving it or not `secret`.
 
+## Deploy to Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 ## Author
 
 Kamil Trzciński, Polidea, 2014

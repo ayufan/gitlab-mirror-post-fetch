@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN
+          http://www.apple.com/DTDs/PropertyList-1.0.dtd >
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>net.spy.gitmirror</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/dustin/go/bin/gitmirror</string>
+      <string>-git=/usr/local/bin/git</string>
+      <string>-dir=/Volumes/terror/git</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/</string>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+  </dict>
+</plist>

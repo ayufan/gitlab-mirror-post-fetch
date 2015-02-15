@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [[ -z "$GITLAB_PRIVATE_TOKEN" ]]; then
+	echo "Missing GITLAB_PRIVATE_TOKEN."
+	exit 1
+fi
+
+if [[ -z "$GITLAB_URL" ]]; then
+	echo "Missing GITLAB_URL."
+	exit 1
+fi
+
+if [[ -z "$GITLAB_GROUP" ]]; then
+	echo "Missing GITLAB_GROUP."
+	exit 1
+fi
+
+mkdir -p ~/.ssh
+
+if [[ ! -e "~/.ssh/id_rsa" ]]; then
+	if [[ -z "$GITLAB_SSH_KEY" ]]; then
+		echo "Missing .ssh/id_rsa or GITLAB_SSH_KEY."
+	fi
+
+	echo "$GITLAB_SSH_KEY" >> ~/.ssh/id_rsa
+	chmod 0600 ~/.ssh/id_rsa
+fi
+
+cat <<EOF > ~/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+
+exec gitlab-mirror-post-fetch
+

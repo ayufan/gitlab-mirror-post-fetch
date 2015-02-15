@@ -1,0 +1,17 @@
+{
+	"ImportPath": "github.com/ayufan/gitlab-mirror-post-fetch",
+	"GoVersion": "go1.4",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/ayufan/gitmirror",
+			"Rev": "f30c128fc8cbac22610956ce68670e3c1c04313d"
+		},
+		{
+			"ImportPath": "github.com/dustin/httputil",
+			"Rev": "b777b1e509e412ae54d27192db557fd96c4b7a9c"
+		}
+	]
+}
