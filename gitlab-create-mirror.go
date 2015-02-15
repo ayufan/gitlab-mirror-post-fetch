@@ -254,6 +254,7 @@ func doCreateRemote() {
 	repo_name := repo_url.Path
 	repo_name = strings.TrimPrefix(repo_name, "/")
 	repo_name = strings.TrimSuffix(repo_name, ".git")
+	repo_name = strings.TrimPrefix(repo_name, *group + "/")
 	repo_name = strings.Replace(repo_name, "/", "-", -1)
 
 	log.Printf("Looking for project %v in %v...", repo_name, *group)
