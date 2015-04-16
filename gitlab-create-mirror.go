@@ -22,6 +22,7 @@ var (
 	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL [GITLAB_URL]")
 	api_path         = flag.String("gitlab-api-path", "/api/v3", "GitLab API path")
 	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", ""), "GitLab Group [GITLAB_GROUP]")
+	trim_name        = flag.String("trim-name", getEnvOrDefault("TRIM_NAME", ""), "Trim prefix from project name [TRIM_NAME]")
 	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token [GITLAB_PRIVATE_TOKEN]")
 	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public [GITLAB_VISIBILITIY_LEVEL]")
 	git              = flag.String("git", "/usr/bin/git", "path to git")
@@ -264,6 +265,7 @@ func doCreateRemote() {
 	repo_name = strings.TrimSuffix(repo_name, ".git")
 	repo_name = strings.TrimPrefix(repo_name, *group+"/")
 	repo_name = strings.Replace(repo_name, "/", "-", -1)
+	repo_name = strings.TrimPrefix(repo_name, *trim_name)
 
 	log.Printf("Looking for project %v in %v...", repo_name, *group)
 	project_data := findProject(*group, repo_name)
