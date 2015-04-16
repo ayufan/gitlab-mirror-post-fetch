@@ -1,21 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"bytes"
-	"flag"
-	"log"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"io"
+	"encoding/json"
 	"errors"
+	"flag"
+	"fmt"
+	"github.com/dustin/httputil"
+	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
-	"github.com/dustin/httputil"
 )
 
 var (
@@ -35,40 +35,40 @@ const (
 )
 
 type Group struct {
-	Id                   int      `json:"id,omitempty"`
-	Name                 string   `json:"name,omitempty"`
-	Path                 string   `json:"path,omitempty"`
-	OwnerId              int      `json:"owner_id,omitempty"`
+	Id      int    `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Path    string `json:"path,omitempty"`
+	OwnerId int    `json:"owner_id,omitempty"`
 }
 
 type CreateProject struct {
-	Name                 string     `json:"name,omitempty"`
-	Description          string     `json:"description,omitempty"`
-	Path                 string     `json:"path,omitempty"`
-	IssuesEnabled        bool       `json:"issues_enabled"`
-	MergeRequestsEnabled bool       `json:"merge_requests_enabled"`
-	WikiEnabled          bool       `json:"wiki_enabled"`
-	SnippetsEnabled      bool       `json:"snippets_enabled"`
-	NamespaceId          int        `json:"namespace_id,omitempty"`
-	VisibilityLevel      int        `json:"visibility_level"`
+	Name                 string `json:"name,omitempty"`
+	Description          string `json:"description,omitempty"`
+	Path                 string `json:"path,omitempty"`
+	IssuesEnabled        bool   `json:"issues_enabled"`
+	MergeRequestsEnabled bool   `json:"merge_requests_enabled"`
+	WikiEnabled          bool   `json:"wiki_enabled"`
+	SnippetsEnabled      bool   `json:"snippets_enabled"`
+	NamespaceId          int    `json:"namespace_id,omitempty"`
+	VisibilityLevel      int    `json:"visibility_level"`
 }
 
 type Namespace struct {
-	Id                   int        `json:"id,omitempty"`
-	Name                 string     `json:"name,omitempty"`
-	Description          string     `json:"description,omitempty"`
-	Path                 string     `json:"path,omitempty"`
+	Id          int    `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Path        string `json:"path,omitempty"`
 }
 
 type Project struct {
-	Id                   int        `json:"id,omitempty"`
-	Name                 string     `json:"name,omitempty"`
-	Description          string     `json:"description,omitempty"`
-	Public               bool       `json:"public,omitempty"`
-	Path                 string     `json:"path,omitempty"`
-	SshRepoUrl           string     `json:"ssh_url_to_repo"`
-	HttpRepoUrl          string     `json:"http_url_to_repo"`
-	Namespace             *Namespace `json:"namespace"`
+	Id          int        `json:"id,omitempty"`
+	Name        string     `json:"name,omitempty"`
+	Description string     `json:"description,omitempty"`
+	Public      bool       `json:"public,omitempty"`
+	Path        string     `json:"path,omitempty"`
+	SshRepoUrl  string     `json:"ssh_url_to_repo"`
+	HttpRepoUrl string     `json:"http_url_to_repo"`
+	Namespace   *Namespace `json:"namespace"`
 }
 
 func getEnvOrDefault(env string, defaultValue string) string {
@@ -80,7 +80,7 @@ func getEnvOrDefault(env string, defaultValue string) string {
 }
 
 func readPayload(r io.Reader) ([]byte, error) {
-	maxPayloadSize := int64(1 << 63 - 1)
+	maxPayloadSize := int64(1<<63 - 1)
 	maxPayloadSize = int64(10 << 20) // 10 MB is a lot of text.
 	b, err := ioutil.ReadAll(io.LimitReader(r, maxPayloadSize+1))
 	if err != nil {
@@ -121,7 +121,7 @@ func getURL(path string) string {
 	return fmt.Sprintf("%v/%v/%v", *address, *api_path, path)
 }
 
-func groups() ([]*Group) {
+func groups() []*Group {
 	url := getURL(groups_url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -144,7 +144,7 @@ func findGroup(name string) *Group {
 	return nil
 }
 
-func projects() ([]*Project) {
+func projects() []*Project {
 	url := getURL(projects_url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -218,7 +218,7 @@ func doCreate(repo_name string, repo_url string) *Project {
 	}
 
 	log.Printf("Creating project %v in %v...", repo_name, *group)
-	new_project := CreateProject {}
+	new_project := CreateProject{}
 	new_project.Name = repo_name
 	new_project.Description = fmt.Sprintf("Mirror of %v", repo_url)
 	new_project.IssuesEnabled = false
@@ -254,7 +254,7 @@ func doCreateRemote() {
 	repo_name := repo_url.Path
 	repo_name = strings.TrimPrefix(repo_name, "/")
 	repo_name = strings.TrimSuffix(repo_name, ".git")
-	repo_name = strings.TrimPrefix(repo_name, *group + "/")
+	repo_name = strings.TrimPrefix(repo_name, *group+"/")
 	repo_name = strings.Replace(repo_name, "/", "-", -1)
 
 	log.Printf("Looking for project %v in %v...", repo_name, *group)
