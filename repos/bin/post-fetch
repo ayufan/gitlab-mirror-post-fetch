@@ -10,11 +10,6 @@ if [[ -z "$GITLAB_URL" ]]; then
 	exit 1
 fi
 
-if [[ -z "$GITLAB_GROUP" ]]; then
-	echo "Missing GITLAB_GROUP."
-	exit 1
-fi
-
 mkdir -p ~/.ssh
 
 if [[ ! -e "~/.ssh/id_rsa" ]]; then
@@ -32,4 +27,3 @@ Host *
 EOF
 
 exec gitlab-mirror-post-fetch
-

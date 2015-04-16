@@ -11,7 +11,7 @@
     "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-go",
     "GITLAB_PRIVATE_TOKEN": "<enter-GitLab-user-private-token>",
     "GITLAB_URL": "https://gitlab.org/",
-    "GITLAB_GROUP": "Mirrors",
+    "GITLAB_GROUP": "",
     "GITLAB_SSH_KEY": "Paste here ssh key assigned to GitLab user beggining with -----BEGIN RSA PRIVATE KEY-----",
     "GITMIRROR_SECRET": "<enter-random-secret-to-be-used-to-secure-gitmirror>"
   }

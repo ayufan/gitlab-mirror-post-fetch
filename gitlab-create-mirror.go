@@ -21,7 +21,7 @@ import (
 var (
 	address          = flag.String("gitlab-url", getEnvOrDefault("GITLAB_URL", ""), "GitLab URL [GITLAB_URL]")
 	api_path         = flag.String("gitlab-api-path", "/api/v3", "GitLab API path")
-	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", "Mirrors"), "GitLab Group [GITLAB_GROUP]")
+	group            = flag.String("gitlab-group", getEnvOrDefault("GITLAB_GROUP", ""), "GitLab Group [GITLAB_GROUP]")
 	private_token    = flag.String("gitlab-private-token", getEnvOrDefault("GITLAB_PRIVATE_TOKEN", ""), "GitLab Mirror Private Token [GITLAB_PRIVATE_TOKEN]")
 	visibility_level = flag.String("gitlab-visibility-level", getEnvOrDefault("GITLAB_VISIBILITIY_LEVEL", "private"), "Select private, internal or public [GITLAB_VISIBILITIY_LEVEL]")
 	git              = flag.String("git", "/usr/bin/git", "path to git")
@@ -134,6 +134,10 @@ func groups() []*Group {
 }
 
 func findGroup(name string) *Group {
+	if name == "" {
+		return nil
+	}
+
 	groups := groups()
 
 	for _, group := range groups {
@@ -160,7 +164,9 @@ func findProject(namespace string, project_name string) *Project {
 	projects := projects()
 
 	for _, project := range projects {
-		if project.Namespace.Name == namespace && project.Name == project_name {
+		// this is hack for project of existing name
+		nsMatch := project.Namespace.Name == namespace || namespace == ""
+		if nsMatch && project.Name == project_name {
 			return project
 		}
 	}
@@ -213,7 +219,7 @@ func readOriginRemote() url.URL {
 func doCreate(repo_name string, repo_url string) *Project {
 	log.Printf("Looking for group %v...", *group)
 	group_data := findGroup(*group)
-	if group_data == nil {
+	if group_data == nil && *group != "" {
 		log.Fatalf("No group %v found.", *group)
 	}
 
@@ -225,7 +231,9 @@ func doCreate(repo_name string, repo_url string) *Project {
 	new_project.MergeRequestsEnabled = false
 	new_project.WikiEnabled = false
 	new_project.SnippetsEnabled = false
-	new_project.NamespaceId = group_data.Id
+	if group_data != nil {
+		new_project.NamespaceId = group_data.Id
+	}
 	switch *visibility_level {
 	case "private":
 		new_project.VisibilityLevel = 0
