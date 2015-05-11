@@ -1,0 +1,2 @@
+gitmirror:
+  image: ayufan/gitlab-mirror-post-fetch
